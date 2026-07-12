@@ -1,0 +1,6 @@
+/* Minimal app-level styles. Bootstrap (imported in main.jsx) handles the rest.
+   The default Vite template pinned #root to a fixed centered width, which
+   fights Bootstrap's fluid grid — so we let the body flow full-width instead. */
+body {
+  margin: 0;
+}
