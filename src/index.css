@@ -1,6 +1,264 @@
-/* Minimal app-level styles. Bootstrap (imported in main.jsx) handles the rest.
-   The default Vite template pinned #root to a fixed centered width, which
-   fights Bootstrap's fluid grid — so we let the body flow full-width instead. */
+/* PaceBuilder design system.
+   Bootstrap (imported first in main.jsx) supplies the components; these rules
+   layer a modern look on top — refined palette, type, spacing, and elevation.
+   The brand blue matches the chart "actual" color so UI and data feel unified. */
+
+:root {
+  /* Brand + neutrals */
+  --pb-primary: #2a78d6;
+  --pb-primary-dark: #1f5aa6;
+  --pb-primary-light: #eaf2fc;
+  --pb-ink: #16202c;
+  --pb-muted: #667085;
+  --pb-page: #f4f6f9;
+  --pb-card: #ffffff;
+  --pb-border: #e7eaf0;
+
+  --pb-radius: 16px;
+  --pb-radius-sm: 10px;
+  --pb-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --pb-shadow: 0 6px 20px rgba(16, 24, 40, 0.07);
+  --pb-shadow-lg: 0 20px 48px rgba(16, 24, 40, 0.16);
+
+  /* Remap the Bootstrap primary so buttons, links, badges, and the wizard dots
+     all pick up the brand blue without recompiling Sass. */
+  --bs-primary: var(--pb-primary);
+  --bs-primary-rgb: 42, 120, 214;
+  --bs-link-color: var(--pb-primary);
+  --bs-link-color-rgb: 42, 120, 214;
+  --bs-link-hover-color: var(--pb-primary-dark);
+  --bs-body-color: var(--pb-ink);
+  --bs-body-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --bs-emphasis-color: var(--pb-ink);
+}
+
 body {
   margin: 0;
+  color: var(--pb-ink);
+  font-family: var(--bs-body-font-family);
+  /* Soft glow at the top of the page. */
+  background: radial-gradient(1200px 600px at 50% -12%, #e9f1fd 0%, var(--pb-page) 46%) fixed,
+    var(--pb-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+[role='button'] {
+  cursor: pointer;
+}
+
+/* --- Navbar ------------------------------------------------------------- */
+.pb-navbar {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: 1px solid var(--pb-border);
+  box-shadow: var(--pb-shadow-sm);
+}
+.pb-navbar .navbar-brand {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--pb-ink);
+}
+.pb-navbar .nav-link {
+  font-weight: 600;
+  color: var(--pb-muted);
+  transition: color 0.15s ease;
+}
+.pb-navbar .nav-link:hover,
+.pb-navbar .nav-link.active {
+  color: var(--pb-primary);
+}
+
+/* --- Cards -------------------------------------------------------------- */
+.card {
+  border: 1px solid var(--pb-border);
+  border-radius: var(--pb-radius);
+  box-shadow: var(--pb-shadow-sm);
+  background: var(--pb-card);
+}
+.card-title {
+  letter-spacing: -0.01em;
+}
+
+/* --- Buttons ------------------------------------------------------------ */
+.btn {
+  border-radius: var(--pb-radius-sm);
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease, color 0.15s ease;
+}
+.btn-lg {
+  border-radius: 12px;
+}
+.btn-primary {
+  --bs-btn-bg: var(--pb-primary);
+  --bs-btn-border-color: var(--pb-primary);
+  --bs-btn-hover-bg: var(--pb-primary-dark);
+  --bs-btn-hover-border-color: var(--pb-primary-dark);
+  --bs-btn-active-bg: var(--pb-primary-dark);
+  --bs-btn-active-border-color: var(--pb-primary-dark);
+  --bs-btn-disabled-bg: var(--pb-primary);
+  --bs-btn-disabled-border-color: var(--pb-primary);
+  box-shadow: 0 2px 8px rgba(42, 120, 214, 0.24);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(42, 120, 214, 0.3);
+}
+.btn-outline-secondary {
+  --bs-btn-color: #344054;
+  --bs-btn-border-color: #d3d8e0;
+  --bs-btn-hover-bg: #f2f5f9;
+  --bs-btn-hover-border-color: #bcc4d0;
+  --bs-btn-hover-color: var(--pb-ink);
+  --bs-btn-active-bg: #eef2f7;
+  --bs-btn-active-color: var(--pb-ink);
+}
+.btn-light {
+  --bs-btn-bg: #f2f4f7;
+  --bs-btn-border-color: #f2f4f7;
+  --bs-btn-hover-bg: #e7ebf1;
+  --bs-btn-hover-border-color: #dfe4ec;
+}
+
+/* --- Forms -------------------------------------------------------------- */
+.form-control,
+.form-select {
+  border-radius: var(--pb-radius-sm);
+  border-color: var(--pb-border);
+  padding: 0.6rem 0.85rem;
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--pb-primary);
+  box-shadow: 0 0 0 0.2rem rgba(42, 120, 214, 0.16);
+}
+.input-group-text {
+  border-radius: var(--pb-radius-sm);
+  background: #f2f4f7;
+  border-color: var(--pb-border);
+  color: var(--pb-muted);
+  font-weight: 600;
+}
+.form-label {
+  font-weight: 600;
+  color: var(--pb-ink);
+  margin-bottom: 0.35rem;
+}
+
+/* --- Modal -------------------------------------------------------------- */
+.modal-content {
+  border: 0;
+  border-radius: 18px;
+  box-shadow: var(--pb-shadow-lg);
+  overflow: hidden;
+}
+.modal-header,
+.modal-footer {
+  border-color: var(--pb-border);
+}
+.modal-title {
+  font-weight: 700;
+}
+
+/* --- List groups -------------------------------------------------------- */
+.list-group-item {
+  border-color: var(--pb-border);
+}
+
+/* --- Badges ------------------------------------------------------------- */
+.badge {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: 0.4em 0.7em;
+  border-radius: 8px;
+}
+
+/* --- Landing hero ------------------------------------------------------- */
+.pb-hero-badge {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: var(--pb-primary-light);
+  color: var(--pb-primary-dark);
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+.pb-hero-title {
+  font-size: clamp(2.4rem, 5.5vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  background: linear-gradient(92deg, #1f5aa6 0%, #2a78d6 55%, #37a7c4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 1rem;
+}
+.pb-hero-sub {
+  color: var(--pb-muted);
+  font-size: 1.15rem;
+  max-width: 34rem;
+  margin: 0 auto 2.25rem;
+}
+
+/* --- Review "Confirm Plan" cards --------------------------------------- */
+.info-card {
+  background: var(--pb-card);
+  border: 1px solid var(--pb-border);
+  border-radius: 14px;
+  box-shadow: var(--pb-shadow-sm);
+  padding: 1rem 1.1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.info-card:hover {
+  border-color: var(--pb-primary);
+  box-shadow: var(--pb-shadow);
+  transform: translateY(-2px);
+}
+.info-card .info-label {
+  color: var(--pb-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.info-card .info-value {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 0.15rem;
+}
+
+/* --- Onboarding wizard -------------------------------------------------- */
+.wizard-dot {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.wizard-dot:not(:disabled):hover {
+  transform: scale(1.25);
+}
+.choice-box {
+  border-radius: 14px !important;
+  min-width: 104px;
+  min-height: 80px;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.choice-box.btn-light {
+  background: var(--pb-card);
+  border: 2px solid var(--pb-border);
+  box-shadow: var(--pb-shadow-sm);
+}
+.choice-box.btn-light:hover {
+  border-color: var(--pb-primary);
+  box-shadow: var(--pb-shadow);
+  transform: translateY(-2px);
+}
+.choice-box.btn-primary {
+  box-shadow: 0 8px 20px rgba(42, 120, 214, 0.28);
 }
