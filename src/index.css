@@ -208,7 +208,87 @@ h1, h2, h3, h4, h5 {
   margin: 0 auto 2.25rem;
 }
 
-/* --- Review "Confirm Plan" cards --------------------------------------- */
+/* --- Review "Confirm Plan" screen -------------------------------------- */
+.review-eyebrow {
+  color: var(--pb-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+}
+.review-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  border-bottom: 2px dashed transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.review-title:hover {
+  color: var(--pb-primary);
+  border-bottom-color: var(--pb-primary);
+}
+
+/* Week-by-week plan table */
+.plan-table {
+  font-size: 0.82rem;
+}
+.plan-table thead th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--pb-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.plan-table td,
+.plan-table th {
+  padding: 0.5rem 0.55rem;
+  vertical-align: middle;
+}
+.plan-table .pt-phase {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--pb-primary-light);
+  color: var(--pb-primary-dark);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.plan-table .pt-type {
+  font-weight: 600;
+  color: var(--pb-ink);
+  white-space: nowrap;
+}
+.plan-table .pt-dist {
+  color: var(--pb-ink);
+}
+.plan-table .pt-pace {
+  color: var(--pb-muted);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.plan-table .pt-total {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.plan-table .pt-actual {
+  color: var(--pb-primary);
+  font-weight: 600;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Interactive (Plan view) table — cells are clickable to open the log modal. */
+.plan-table--interactive .pt-cell {
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.plan-table--interactive .pt-cell:hover {
+  background: rgba(42, 120, 214, 0.08);
+}
+
 .info-card {
   background: var(--pb-card);
   border: 1px solid var(--pb-border);
@@ -233,6 +313,46 @@ h1, h2, h3, h4, h5 {
   font-size: 1.05rem;
   font-weight: 600;
   margin-top: 0.15rem;
+}
+
+/* --- Workout structure (Planned breakdown in the log modal) ------------- */
+.workout-structure {
+  font-size: 0.9rem;
+}
+.workout-structure .ws-item {
+  padding: 0.35rem 0.1rem;
+  border-bottom: 1px solid var(--pb-border);
+}
+.workout-structure .ws-item:last-child {
+  border-bottom: 0;
+}
+.workout-structure .ws-label {
+  font-weight: 600;
+  color: var(--pb-ink);
+}
+.workout-structure .ws-detail {
+  color: var(--pb-muted);
+}
+.workout-structure .ws-repeat {
+  background: var(--pb-primary-light);
+  border-radius: var(--pb-radius-sm);
+  border-bottom: 0;
+  padding: 0.5rem 0.75rem;
+  margin: 0.35rem 0;
+}
+.workout-structure .ws-steps {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding-left: 0.75rem;
+}
+.workout-structure .ws-steps li {
+  padding: 0.1rem 0;
+}
+.workout-structure .ws-kind {
+  display: inline-block;
+  min-width: 4.5rem;
+  font-weight: 600;
+  color: var(--pb-primary-dark);
 }
 
 /* --- Onboarding wizard -------------------------------------------------- */
