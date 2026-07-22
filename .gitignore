@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# OneNote export junk
+*.onetoc2
+
+# Claude Code local settings
+.claude/
