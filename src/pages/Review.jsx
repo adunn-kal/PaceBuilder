@@ -1,19 +1,37 @@
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
+import Alert from 'react-bootstrap/Alert'
+import Card from 'react-bootstrap/Card'
+import Table from 'react-bootstrap/Table'
 
 import { getDraft, savePlan, clearDraft, createPlanId } from '../lib/planStorage.js'
-import { buildSampleWeeks } from '../lib/samplePlan.js'
+import { generatePlan } from '../lib/generatePlan.js'
+
+const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+// Compact labels for the week-by-week table.
+const TYPE_SHORT = {
+  'Easy Run': 'Easy',
+  'Tempo Run': 'Tempo',
+  'Long Run': 'Long',
+  Intervals: 'Intervals',
+}
+const shortType = (day) => (/race day/i.test(day.note) ? 'Race' : TYPE_SHORT[day.type] || day.type)
+const shortPace = (pace) => (pace && pace !== '—' ? pace.replace(' / mi', '') : '')
 
 // Grid fields (after the full-width title). `step` is the wizard step index so
-// clicking a card jumps back to edit that specific answer.
+// clicking a card jumps back to edit that specific answer. Indices match the
+// STEPS order in Onboarding.jsx.
 const FIELDS = [
-  { key: 'currentPace', label: 'Current easy pace', step: 5 },
-  { key: 'goalPace', label: 'Goal Pace', step: 6 },
+  { key: 'currentPace', label: 'Current easy pace', step: 6 },
+  { key: 'goalPace', label: 'Goal Pace', step: 7 },
   { key: 'fitnessLevel', label: 'Current Fitness', step: 3 },
-  { key: 'daysPerWeek', label: 'Days per week', step: 4 },
+  { key: 'weeklyMileage', label: 'Weekly mileage', step: 4, format: (v) => (v ? `${v} mi` : '') },
+  { key: 'daysPerWeek', label: 'Days per week', step: 5 },
   { key: 'raceDate', label: 'Race Date', step: 2, format: formatDate },
   { key: 'raceDistance', label: 'Distance', step: 1 },
 ]
@@ -35,18 +53,21 @@ function Review() {
 
   const edit = (step) => navigate('/onboarding', { state: { step } })
 
-  function generatePlan() {
+  // Generate up front so any timeline/pace warnings show before the user
+  // commits, giving them a chance to jump back and edit an answer.
+  const generated = useMemo(() => generatePlan(draft), [draft])
+
+  function confirmPlan() {
     const id = createPlanId(draft.title)
-    // Shell placeholder: real plan generation (progressive mileage, phases,
-    // pace targets, recovery weeks) plugs in here. For now we build a stand-in
-    // week structure so the new plan is populated.
     const plan = {
       id,
       title: draft.title || 'Untitled Plan',
       createdFrom: draft,
-      generatedAt: '2026-07-12',
+      generatedAt: generated.generatedAt,
+      startDate: generated.startDate,
       raceDate: draft.raceDate,
-      weeks: buildSampleWeeks(),
+      warnings: generated.warnings,
+      weeks: generated.weeks,
       logs: {},
     }
     savePlan(plan)
@@ -56,19 +77,35 @@ function Review() {
 
   return (
     <Container className="py-5">
-      <h1 className="text-center mb-5">Confirm Plan</h1>
+      {/* Compact title header — click the plan name to rename it. */}
+      <div className="text-center mb-5">
+        <div className="review-eyebrow">Confirm your plan</div>
+        <h1
+          role="button"
+          onClick={() => edit(0)}
+          className="review-title mb-0 d-inline-block"
+          title="Click to rename"
+        >
+          {draft.title || 'Untitled Plan'}
+        </h1>
+      </div>
 
       <Row className="justify-content-center">
-        <Col lg={9}>
-          {/* Plan title — full width */}
-          <InfoCard
-            label="Plan Title"
-            value={draft.title}
-            onClick={() => edit(0)}
-            className="mb-4"
-          />
+        <Col lg={10}>
+          {/* Heads-up about anything unusual (tight timeline, aggressive goal)
+              so it can be fixed before committing. */}
+          {generated.warnings.length > 0 && (
+            <Alert variant="warning" className="mb-4">
+              <Alert.Heading className="h6">Before you confirm</Alert.Heading>
+              <ul className="mb-0 ps-3">
+                {generated.warnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
 
-          {/* Remaining answers — responsive grid of cards */}
+          {/* Answers — responsive grid of cards */}
           <Row className="g-3">
             {FIELDS.map((f) => (
               <Col md={4} key={f.key}>
@@ -81,10 +118,57 @@ function Review() {
             ))}
           </Row>
 
+          {/* Week-by-week preview of the generated plan. */}
+          <h2 className="h5 mt-5 mb-3">
+            Your {generated.weeks.length}-week plan
+          </h2>
+          <Card>
+            <Card.Body className="p-0">
+              <div className="table-responsive">
+                <Table className="plan-table mb-0 align-middle" size="sm">
+                  <thead>
+                    <tr>
+                      <th>Wk</th>
+                      <th>Phase</th>
+                      {DOW.map((d) => (
+                        <th key={d}>{d}</th>
+                      ))}
+                      <th className="text-end">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {generated.weeks.map((w) => (
+                      <tr key={w.number}>
+                        <td className="fw-semibold">{w.number}</td>
+                        <td>
+                          <span className="pt-phase">{w.phase}</span>
+                        </td>
+                        {w.days.map((day) => (
+                          <td key={day.id}>
+                            {day.type === 'Rest' ? (
+                              <span className="text-muted">—</span>
+                            ) : (
+                              <>
+                                <div className="pt-type">{shortType(day)}</div>
+                                <div className="pt-dist">{day.distance}</div>
+                                <div className="pt-pace">{shortPace(day.pace)}</div>
+                              </>
+                            )}
+                          </td>
+                        ))}
+                        <td className="text-end fw-semibold pt-total">{w.mileage} mi</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+            </Card.Body>
+          </Card>
+
           {/* Commit */}
           <Row className="justify-content-center mt-5">
             <Col md={7} className="d-grid">
-              <Button size="lg" variant="primary" className="fw-bold py-3" onClick={generatePlan}>
+              <Button size="lg" variant="primary" className="fw-bold py-3" onClick={confirmPlan}>
                 Confirm
               </Button>
             </Col>
