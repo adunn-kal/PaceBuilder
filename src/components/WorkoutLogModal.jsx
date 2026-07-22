@@ -46,11 +46,34 @@ function WorkoutLogModal({ show, onHide, day, existingLog, onSave }) {
       </Modal.Header>
 
       <Modal.Body>
-        {/* Planned — read-only prescription summary */}
+        {/* Planned — read-only prescription summary + structured breakdown */}
         <div className="small text-muted mb-1">Planned</div>
-        <div className="viz-daybar fw-bold mb-4" style={{ fontSize: '1.1rem' }}>
+        <div className="viz-daybar fw-bold mb-2" style={{ fontSize: '1.1rem' }}>
           {planned}
         </div>
+        {day.type !== 'Rest' && day.structure?.length > 0 && (
+          <div className="workout-structure mb-4">
+            {day.structure.map((s, i) =>
+              s.repeat ? (
+                <div key={i} className="ws-item ws-repeat">
+                  <div className="ws-label">{s.label}</div>
+                  <ul className="ws-steps">
+                    {s.repeat.steps.map((step, j) => (
+                      <li key={j}>
+                        <span className="ws-kind">{step.kind}:</span> {step.distance}
+                        <span className="text-muted"> @ {step.pace}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div key={i} className="ws-item">
+                  <span className="ws-label">{s.label}:</span> <span className="ws-detail">{s.detail}</span>
+                </div>
+              ),
+            )}
+          </div>
+        )}
 
         {/* Your Log — editable actuals */}
         <div className="small text-muted mb-2">Your Log</div>
