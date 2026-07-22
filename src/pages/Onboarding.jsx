@@ -42,6 +42,13 @@ const STEPS = [
     ],
   },
   {
+    key: 'weeklyMileage',
+    type: 'number',
+    label: 'About how many miles a week do you run right now?',
+    suffix: 'mi / week',
+    placeholder: '20',
+  },
+  {
     key: 'daysPerWeek',
     type: 'choice',
     label: 'How many days per week can you train?',
@@ -55,6 +62,45 @@ const STEPS = [
   { key: 'currentPace', type: 'pace', label: 'What is your current easy pace?' },
   { key: 'goalPace', type: 'pace', label: 'What is your goal race pace?' },
 ]
+
+// Live per-field validation. Returns an error string, or null when valid.
+// Empty values return null — an unanswered step just hides "Next" (see below),
+// it isn't an error to nag about before the user has typed anything.
+function validateStep(step, value) {
+  const v = String(value ?? '').trim()
+  if (!v) return null
+
+  switch (step.type) {
+    case 'pace': {
+      const m = v.match(/^(\d{1,2}):(\d{2})$/)
+      if (!m) return 'Use mm:ss format, e.g. 8:30'
+      if (Number(m[2]) > 59) return 'Seconds must be between 00 and 59'
+      const sec = Number(m[1]) * 60 + Number(m[2])
+      if (sec < 180 || sec > 1200) return 'Enter a pace between 3:00 and 20:00 / mi'
+      return null
+    }
+    case 'number': {
+      const n = Number(v)
+      if (!Number.isFinite(n)) return 'Enter a number'
+      if (n < 0) return "Mileage can't be negative"
+      if (n > 200) return 'That looks too high — enter your weekly miles'
+      return null
+    }
+    case 'date': {
+      const d = new Date(`${v}T00:00:00`)
+      if (Number.isNaN(d.getTime())) return 'Pick a valid date'
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      if (d < today) return 'Race day is in the past — pick a future date'
+      return null
+    }
+    case 'text':
+      if (v.length > 60) return 'Keep the title under 60 characters'
+      return null
+    default:
+      return null
+  }
+}
 
 function Onboarding() {
   const navigate = useNavigate()
@@ -74,6 +120,8 @@ function Onboarding() {
   const isLast = stepIndex === STEPS.length - 1
   const rawValue = answers[step.key]
   const hasValue = rawValue != null && String(rawValue).trim() !== ''
+  const error = validateStep(step, rawValue)
+  const canProceed = hasValue && !error
 
   function updateAnswer(value) {
     setAnswers((prev) => ({ ...prev, [step.key]: value }))
@@ -117,11 +165,16 @@ function Onboarding() {
 
           <h3 className="mb-4">{step.label}</h3>
 
-          <StepInput step={step} value={rawValue || ''} onChange={updateAnswer} />
+          <StepInput step={step} value={rawValue || ''} onChange={updateAnswer} invalid={Boolean(error)} />
 
-          {/* Next only appears once the step has a value. */}
-          <div style={{ minHeight: 60 }} className="mt-4">
-            {hasValue && (
+          {/* Inline validation feedback for the current answer. */}
+          <div className="text-danger small mt-2" style={{ minHeight: 20 }}>
+            {error || ''}
+          </div>
+
+          {/* Next only appears once the step has a valid value. */}
+          <div style={{ minHeight: 60 }} className="mt-3">
+            {canProceed && (
               <Button size="lg" variant="primary" onClick={goNext}>
                 {isLast ? 'Review Answers →' : 'Next →'}
               </Button>
@@ -133,8 +186,9 @@ function Onboarding() {
   )
 }
 
-// Renders the right control for a step's `type`.
-function StepInput({ step, value, onChange }) {
+// Renders the right control for a step's `type`. `invalid` toggles the
+// red is-invalid state on free-text controls.
+function StepInput({ step, value, onChange, invalid }) {
   switch (step.type) {
     case 'choice':
       return (
@@ -159,6 +213,7 @@ function StepInput({ step, value, onChange }) {
           className="mx-auto text-center"
           style={{ maxWidth: 220 }}
           value={value}
+          isInvalid={invalid}
           onChange={(e) => onChange(e.target.value)}
           autoFocus
         />
@@ -166,17 +221,36 @@ function StepInput({ step, value, onChange }) {
 
     case 'pace':
       return (
-        <InputGroup className="mx-auto" style={{ maxWidth: 200 }}>
+        <InputGroup className="mx-auto" style={{ maxWidth: 200 }} hasValidation>
           <Form.Control
             type="text"
             inputMode="numeric"
             placeholder="8:00"
             className="text-center"
             value={value}
+            isInvalid={invalid}
             onChange={(e) => onChange(e.target.value)}
             autoFocus
           />
           <InputGroup.Text>/mi</InputGroup.Text>
+        </InputGroup>
+      )
+
+    case 'number':
+      return (
+        <InputGroup className="mx-auto" style={{ maxWidth: 220 }} hasValidation>
+          <Form.Control
+            type="number"
+            inputMode="numeric"
+            min="0"
+            placeholder={step.placeholder || ''}
+            className="text-center"
+            value={value}
+            isInvalid={invalid}
+            onChange={(e) => onChange(e.target.value)}
+            autoFocus
+          />
+          {step.suffix && <InputGroup.Text>{step.suffix}</InputGroup.Text>}
         </InputGroup>
       )
 
@@ -188,6 +262,7 @@ function StepInput({ step, value, onChange }) {
           style={{ maxWidth: 360 }}
           placeholder={step.placeholder || ''}
           value={value}
+          isInvalid={invalid}
           onChange={(e) => onChange(e.target.value)}
           autoFocus
         />
